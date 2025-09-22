@@ -63,6 +63,8 @@ const MicrocontrollerFlasher = () => {
   const [pendingFirmware, setPendingFirmware] = useState(null);
   const [statusMessage, setStatusMessage] = useState('');
   const [firmwareList, setFirmwareList] = useState('');
+  const [showIMU, setShowIMU] = useState(true);
+  const [continueDefines, setContinueDefines] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -92,7 +94,7 @@ const MicrocontrollerFlasher = () => {
         const response = await fetch("https://api.github.com/repos/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/latest");
         
         const data = await response.json();
-        setFirmwareList(data.assets.filter(a => a.name.endsWith('.uf2')).map(a => ({ name: a.name, url: a.browser_download_url })))
+        setFirmwareList(data.assets.filter(a => a.name).map(a => ({ name: a.name, url: a.browser_download_url })))
 
         const initialDefines = {};
         definesData.forEach(define => {
@@ -109,7 +111,8 @@ const MicrocontrollerFlasher = () => {
     };
 
     fetchData();
-  }, []);
+
+  });
 
   const resetWorkflow = () => {
     setCurrentStep(STEPS.CHOOSE_MODE);
@@ -320,6 +323,20 @@ const MicrocontrollerFlasher = () => {
     await flasher.enterDfuMode();
   }
 
+  const changeSelectedIMU = (value) => {
+    setSelectedMCU(value);
+
+    if (selectedMCU == "Chrysalis" || selectedMCU == "Butterfly" || selectedMCU == "XIAO-Sense") {
+      setContinueDefines(true);
+      setShowIMU(false);
+    } else if (selectedIMU && selectedMCU) {
+      setContinueDefines(true);
+    } else {
+      setContinueDefines(false);
+      setShowIMU(false);
+    };
+  }
+
   const filteredDefineOptions = getFilteredDefines();
 
   const categorizedDefines = filteredDefineOptions.reduce((acc, define) => {
@@ -401,7 +418,6 @@ const MicrocontrollerFlasher = () => {
     <div className="fixed inset-0 bg-gray-900 text-white overflow-auto">
       <div className="w-full px-6 py-8 min-h-full">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-5xl font-bold text-white mb-4">
               SlimeVR nRF Firmware Flasher
@@ -516,7 +532,7 @@ const MicrocontrollerFlasher = () => {
                     </label>
                     <select
                       value={selectedMCU}
-                      onChange={(e) => setSelectedMCU(e.target.value)}
+                      onChange={(e) => changeSelectedIMU(e.target.value)}
                       className="w-full px-4 py-4 bg-gray-700 border border-gray-600 rounded-xl text-white text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     >
                       <option value="">Choose your MCU</option>
@@ -526,6 +542,7 @@ const MicrocontrollerFlasher = () => {
                     </select>
                   </div>
                   
+                  {showIMU == true && (
                   <div>
                     <label className="block text-lg font-medium text-gray-300 mb-3">
                       IMU
@@ -541,13 +558,14 @@ const MicrocontrollerFlasher = () => {
                       ))}
                     </select>
                   </div>
+                  )}
 
                   <div className="pt-6">
                     <button
                       onClick={handleHardwareNext}
-                      disabled={!selectedMCU || !selectedIMU}
+                      disabled={!continueDefines}
                       className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 ${
-                        !selectedMCU || !selectedIMU
+                        !continueDefines
                           ? 'bg-gray-600 cursor-not-allowed text-gray-400'
                           : 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-blue-500/25 transform hover:scale-105'
                       }`}
