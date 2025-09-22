@@ -7,6 +7,6 @@ export default defineConfig({
   react(),
   tailwindcss(),
   ],
-  base: "/SlimeVR-nRF-Firmare-Flasher/",
+  base: "/SlimeVR-nRF-Firmare-Flasher",
            
 })
