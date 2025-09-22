@@ -65,7 +65,6 @@ const MicrocontrollerFlasher = () => {
   const [firmwareList, setFirmwareList] = useState('');
   const [showIMU, setShowIMU] = useState(true);
   const [continueDefines, setContinueDefines] = useState(false);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -111,8 +110,9 @@ const MicrocontrollerFlasher = () => {
     };
 
     fetchData();
+  
+  }, []);
 
-  });
 
   const resetWorkflow = () => {
     setCurrentStep(STEPS.CHOOSE_MODE);
@@ -125,6 +125,7 @@ const MicrocontrollerFlasher = () => {
     setProgress(0);
     setStatusMessage('');
     setIsProcessing(false);
+    setShowIMU(true);
   };
 
   const handleModeSelect = (mode) => {
@@ -323,19 +324,27 @@ const MicrocontrollerFlasher = () => {
     await flasher.enterDfuMode();
   }
 
-  const changeSelectedIMU = (value) => {
-    setSelectedMCU(value);
-
-    if (selectedMCU == "Chrysalis" || selectedMCU == "Butterfly" || selectedMCU == "XIAO-Sense") {
-      setContinueDefines(true);
-      setShowIMU(false);
-    } else if (selectedIMU && selectedMCU) {
-      setContinueDefines(true);
-    } else {
-      setContinueDefines(false);
-      setShowIMU(false);
-    };
+  const changeSelectedMCU = (value) => {
+  const mcusWithoutIMU = ["Chrysalis", "Butterfly", "XIAO-Sense"];
+  const needsIMU = !mcusWithoutIMU.includes(value);
+  
+  if (!needsIMU) {
+    setShowIMU(false);
+    setSelectedIMU(''); 
+    setContinueDefines(true);
+  } else {
+    setShowIMU(true);
+    setContinueDefines(selectedMCU && selectedIMU);
   }
+  setSelectedMCU(value);
+};
+
+const changeSelectedIMU =  (value) => {
+
+  setSelectedIMU(value);
+  
+  setContinueDefines(selectedMCU && value);
+};
 
   const filteredDefineOptions = getFilteredDefines();
 
@@ -524,7 +533,6 @@ const MicrocontrollerFlasher = () => {
                   <h2 className="text-3xl font-bold mb-4">Select Hardware</h2>
                   <p className="text-gray-400">Choose which MCU and IMU you are using</p>
                 </div>
-                
                 <div className="max-w-2xl mx-auto space-y-6">
                   <div>
                     <label className="block text-lg font-medium text-gray-300 mb-3">
@@ -532,7 +540,7 @@ const MicrocontrollerFlasher = () => {
                     </label>
                     <select
                       value={selectedMCU}
-                      onChange={(e) => changeSelectedIMU(e.target.value)}
+                      onChange={(e) => changeSelectedMCU(e.target.value)}
                       className="w-full px-4 py-4 bg-gray-700 border border-gray-600 rounded-xl text-white text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     >
                       <option value="">Choose your MCU</option>
@@ -541,15 +549,14 @@ const MicrocontrollerFlasher = () => {
                       ))}
                     </select>
                   </div>
-                  
-                  {showIMU == true && (
+                  {showIMU && (
                   <div>
                     <label className="block text-lg font-medium text-gray-300 mb-3">
                       IMU
                     </label>
                     <select
                       value={selectedIMU}
-                      onChange={(e) => setSelectedIMU(e.target.value)}
+                      onChange={(e) => changeSelectedIMU(e.target.value)}
                       className="w-full px-4 py-4 bg-gray-700 border border-gray-600 rounded-xl text-white text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     >
                       <option value="">Choose your IMU</option>
@@ -559,7 +566,6 @@ const MicrocontrollerFlasher = () => {
                     </select>
                   </div>
                   )}
-
                   <div className="pt-6">
                     <button
                       onClick={handleHardwareNext}
