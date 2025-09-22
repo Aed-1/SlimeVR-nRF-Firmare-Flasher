@@ -313,7 +313,7 @@ const MicrocontrollerFlasher = () => {
   };
 
   const downloadPre = () => {
-    window.open(selectedPRE);
+    window.open(selectedPRE, '_blank', 'noopener,noreferrer');
     setCurrentStep(STEPS.DFU);
   };
 
@@ -429,7 +429,7 @@ const changeSelectedIMU =  (value) => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-5xl font-bold text-white mb-4">
-              SlimeVR nRF Firmware Flasher
+              SlimeVR nRF Firmware Flash
             </h1>
           
             {currentStep !== STEPS.CHOOSE_MODE && (
