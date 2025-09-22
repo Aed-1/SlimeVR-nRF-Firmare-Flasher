@@ -849,6 +849,8 @@ const MicrocontrollerFlasher = () => {
             )}
 
           </div>
+
+          made by <a href="https://github.com/Aed-1" target="_blank" className='underline text-blue-500'>AED</a>
         </div>
       </div>
     </div>
