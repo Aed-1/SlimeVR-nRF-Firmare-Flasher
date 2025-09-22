@@ -198,19 +198,13 @@ const MicrocontrollerFlasher = () => {
       setIsProcessing(true);
       setError(null);
       setProgress(0);
-      setStatusMessage('Requesting device connection...');
 
-      // Step 1: Get serial port and enter DFU mode
       port = await navigator.serial.requestPort();
-      setStatusMessage('Connecting to device...');
 
       const flasher = new Nrf52DfuFlasher(port);
       await flasher.enterDfuMode();
-      setStatusMessage('Device in DFU mode...');
 
       if (flashMode === 'build') {
-        // Build firmware
-        setStatusMessage('Building firmware...');
         
         const config = {
           mcu: selectedMCU,
@@ -229,13 +223,8 @@ const MicrocontrollerFlasher = () => {
           body: JSON.stringify(config),
         });
 
-        if (!buildResponse.ok) {
-          throw new Error('Failed to build firmware');
-        }
-
         const buildData = await buildResponse.json();
         setProgress(70);
-        setStatusMessage('Downloading firmware...');
 
         const uf2Response = await fetch(`${API_BASE_URL}/download-firmware`, {
           method: 'POST',
@@ -253,7 +242,6 @@ const MicrocontrollerFlasher = () => {
           name: 'firmware.uf2'
         });
       } else {
-        // Direct flash
         setPendingFirmware({
           blob: firmwareFile,
           name: firmwareFile.name
@@ -263,38 +251,19 @@ const MicrocontrollerFlasher = () => {
       setProgress(100);
       setStatusMessage('Ready to save firmware to device');
       setCurrentStep(STEPS.SAVE_FILE);
+
+      await port.close();
+      setIsProcessing(false);
       
     } catch (error) {
-      console.error('Process failed:', error);
-      if (error.name === 'NotFoundError') {
-        setError('No device selected or operation cancelled.');
-      } else if (error.name === 'AbortError') {
-        setError('Operation cancelled by user.');
-      } else {
-        setError(`Process failed: ${error.message}`);
-      }
-    } finally {
-      if (port && (port.readable || port.writable)) {
-        try {
-          await port.close();
-        } catch (closeError) {
-          console.warn('Error closing port:', closeError);
-        }
-      }
-      setIsProcessing(false);
-    }
+      setError(`Process failed: ${error.message}`);
+    } 
   };
 
   const handleSaveToDevice = async () => {
-    if (!pendingFirmware) {
-      setError('No firmware file ready to save');
-      return;
-    }
 
     try {
       setError(null);
-      setStatusMessage('Select device folder...');
-      console.log('Select device folder...');
 
       const dirPicker = await window.showDirectoryPicker();
       
@@ -308,35 +277,24 @@ const MicrocontrollerFlasher = () => {
       }
       
       setStatusMessage('Saving firmware file...');
-      console.log('Saving firmware file...');
       const fileHandle = await dirPicker.getFileHandle(fileToSave.name, { create: true });
       const writable = await fileHandle.createWritable();
       await writable.write(fileToSave);
       await writable.close();
 
       setStatusMessage('Firmware saved successfully!');
-      console.log('Firmware saved successfully!');
       setCurrentStep(STEPS.COMPLETE);
       
     } catch (error) {
-      console.error('Failed to save file:', error);
-      if (error.name === 'AbortError') {
-        setCurrentStep(STEPS.COMPLETE);
-      } else if (error.name === 'SecurityError') {
-        setError('Permission denied. Please ensure you grant access to the file system.');
-      } else {
-        setError(`Failed to save file: ${error.message}`);
+      
+      setError(`Failed to save file: ${error.message}`);
       }
-    }
   };
 
-  // Filter defines based on selected MCU
   const getFilteredDefines = () => {
-    if (!selectedMCU) return defineOptions;
     
     
     if (selectedMCU.includes('XIAO-Sense')) {
-      // Filter out Clock Pin and VCC GPIO pin for XIAO-SENSE
       return defineOptions.filter(define => 
         define.name !== 'Clock Pin' && define.name !== 'VCC GPIO pin' 
       );
@@ -448,8 +406,7 @@ const MicrocontrollerFlasher = () => {
             <h1 className="text-5xl font-bold text-white mb-4">
               SlimeVR nRF Firmware Flasher
             </h1>
-            
-            {/* Reset Button */}
+          
             {currentStep !== STEPS.CHOOSE_MODE && (
               <button
                 onClick={resetWorkflow}
@@ -461,7 +418,6 @@ const MicrocontrollerFlasher = () => {
             )}
           </div>
 
-          {/* Error Display */}
           {error && (
             <div className="mb-8 p-4 bg-red-900/50 border border-red-700 rounded-xl backdrop-blur-sm">
               <div className="flex items-center gap-3">
@@ -471,7 +427,6 @@ const MicrocontrollerFlasher = () => {
             </div>
           )}
 
-          {/* Progress Display */}
           {(isProcessing || currentStep === STEPS.SAVE_FILE) && (
             <div className="mb-8 p-6 bg-blue-900/30 border border-blue-700/50 rounded-xl backdrop-blur-sm">
               <div className="flex items-center gap-3 mb-4">
@@ -486,11 +441,9 @@ const MicrocontrollerFlasher = () => {
               <p className="text-blue-400 text-sm mt-2 font-mono">{progress}% complete</p>
             </div>
           )}
-
-          {/* Step Content */}
+          
           <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-8 backdrop-blur-sm">
             
-            {/* Step 1: Choose Mode */}
             {currentStep === STEPS.CHOOSE_MODE && (
               <div className="text-center">
                 <div className="mb-8">
@@ -525,7 +478,6 @@ const MicrocontrollerFlasher = () => {
               </div>
             )}
 
-            {/* Step 2: Upload File (Direct Mode) */}
             {currentStep === STEPS.UPLOAD_FILE && (
               <div className="text-center">
                 <h2 className="text-3xl font-bold mb-4">Upload Firmware</h2>
@@ -550,7 +502,6 @@ const MicrocontrollerFlasher = () => {
               </div>
             )}
 
-            {/* Step 3: Select Hardware */}
             {currentStep === STEPS.SELECT_HARDWARE && (
               <div>
                 <div className="text-center mb-8">
@@ -651,7 +602,6 @@ const MicrocontrollerFlasher = () => {
               </div>
             )}
 
-            {/* Step 4: Configure */}
             {currentStep === STEPS.CONFIGURE && Object.keys(categorizedDefines).length > 0 && (
               <div>
                 <div className="text-center mb-8">
@@ -695,7 +645,6 @@ const MicrocontrollerFlasher = () => {
               </div>
             )}
 
-            {/* Step 5: Connect Device */}
             {currentStep === STEPS.CONNECT_DEVICE && (
               <div className="text-center">
                 <div className="mb-8">
@@ -772,7 +721,6 @@ const MicrocontrollerFlasher = () => {
               </div>
             )}
 
-            {/* Step 6: Save File */}
             {currentStep === STEPS.SAVE_FILE && (
               <div className="text-center">
                 <div className="mb-8">
@@ -803,7 +751,6 @@ const MicrocontrollerFlasher = () => {
               </div>
             )}
 
-            {/* Step 7: Complete */}
             {currentStep === STEPS.COMPLETE && (
               <div className="text-center">
                 <div className="mb-8">
