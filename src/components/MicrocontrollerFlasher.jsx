@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle, AlertCircle, Upload, Zap, Cpu, Gauge, Settings, ArrowRight, RotateCcw } from 'lucide-react';
+import { AlertCircle, Upload, ArrowRight, RotateCcw } from 'lucide-react';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
@@ -17,33 +17,22 @@ class Nrf52DfuFlasher {
   async enterDfuMode() {
     let writer = null;
     
-    try {
-      console.log('=== ENTERING DFU MODE ===');
-      
-      await this.serialPort.open({
-        baudRate: 115200,
-      });
+    await this.serialPort.open({
+      baudRate: 115200,
+    });
 
-      writer = this.serialPort.writable.getWriter();
+    writer = this.serialPort.writable.getWriter();
       
-      await writer.write(new TextEncoder().encode('dfu\r\n'));
-      await this.sleepMillis(100);
+    await writer.write(new TextEncoder().encode('dfu\r\n'));
+    await this.sleepMillis(100);
 
-      writer.releaseLock();
+    writer.releaseLock();
       
-      console.log('Waiting for device to enter DFU mode...');
-      await this.sleepMillis(1500);
-
-      console.log('DFU MODE ENTRY COMPLETED');
-      
-    } catch (error) {
-      console.error('Failed to enter DFU mode:', error);
-      throw error;
-    }
+    await this.sleepMillis(1500);
+    
   }
 }
 
-// Workflow steps
 const STEPS = {
   CHOOSE_MODE: 'choose_mode',
   UPLOAD_FILE: 'upload_file',
@@ -101,7 +90,7 @@ const MicrocontrollerFlasher = () => {
         setDefineOptions(definesData);
 
         const response = await fetch("https://api.github.com/repos/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/latest");
-        if (!response.ok) throw new Error(`API responded with ${response.status}`);
+        
         const data = await response.json();
         setFirmwareList(data.assets.filter(a => a.name.endsWith('.uf2')).map(a => ({ name: a.name, url: a.browser_download_url })))
 
@@ -160,17 +149,8 @@ const MicrocontrollerFlasher = () => {
   };
 
   const handleHardwareNext = () => {
-    if (!selectedMCU || !selectedIMU) {
-      setError('Please select both microcontroller and IMU sensor');
-      return;
-    }
     setError(null);
-    
-    if (defineOptions.length > 0) {
-      setCurrentStep(STEPS.CONFIGURE);
-    } else {
-      setCurrentStep(STEPS.CONNECT_DEVICE);
-    }
+    setCurrentStep(STEPS.CONFIGURE);
   };
 
   const handleConfigureNext = async () => {
