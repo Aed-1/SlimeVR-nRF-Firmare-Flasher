@@ -312,8 +312,8 @@ const MicrocontrollerFlasher = () => {
     return defineOptions;
   };
 
-  const downloadPre = () => {
-    window.open(selectedPRE, '_blank', 'noopener,noreferrer');
+  const downloadPre = () => { // fix this shit, opens blank page instead of the actual link (maybe gh-pages issue?)
+    window.open(selectedPRE);
     setCurrentStep(STEPS.DFU);
   };
 
@@ -429,7 +429,7 @@ const changeSelectedIMU =  (value) => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-5xl font-bold text-white mb-4">
-              SlimeVR nRF Firmware Flash
+              SlimeVR nRF Firmware Flasher
             </h1>
           
             {currentStep !== STEPS.CHOOSE_MODE && (
