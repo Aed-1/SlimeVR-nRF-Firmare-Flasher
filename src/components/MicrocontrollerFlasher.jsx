@@ -800,8 +800,8 @@ const changeSelectedIMU =  (value) => {
             )}
 
           </div>
-
-          made by <a href="https://github.com/Aed-1" target="_blank" className='underline text-blue-500'>AED</a>
+          
+          <a className='text-gray-500 opacity-50'>made by </a> <a href="https://github.com/Aed-1" target="_blank" className='text-gray-500 opacity-50 hover:underline hover:text-blue-500 hover:opacity-100'>AED</a>
         </div>
       </div>
     </div>
