@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AlertCircle, Upload, ArrowRight, RotateCcw } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = "localhost:5000/api";
 
 class Nrf52DfuFlasher {
   constructor(serialPort) {
@@ -170,20 +170,14 @@ const MicrocontrollerFlasher = () => {
       defines["LP Timeout"] == "300" &&
       defines["Sleep"] == false
     ) {
-      setSelectedPRE(
-        "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_Chrysalis_ProMicro.uf2"
-      );
-      downloadPre();
+      await downloadPre("https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_Chrysalis_ProMicro.uf2");
     } else if (
       selectedMCU == "Butterfly" &&
       defines["Hex Color"] == "#0eeadf" &&
       defines["LP Timeout"] == "300" &&
       defines["Sleep"] == false
     ) {
-      setSelectedPRE(
-        "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SlimevrMini4.uf2"
-      );
-      downloadPre();
+      await downloadPre("https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SlimevrMini4.uf2");
     } else if (
       selectedMCU == "XIAO-Sense" &&
       defines["Hex Color"] == "#0eeadf" &&
@@ -191,10 +185,7 @@ const MicrocontrollerFlasher = () => {
       defines["Sleep"] == false &&
       defines["Clock Pin"] == "020"
     ) {
-      setSelectedPRE(
-        "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_XIAO_Sense.uf2"
-      );
-      downloadPre();
+      await downloadPre("https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_XIAO_Sense.uf2");
     } else if (
       selectedMCU == "ProMicro-SPI" &&
       defines["Hex Color"] == "#0eeadf" &&
@@ -204,10 +195,7 @@ const MicrocontrollerFlasher = () => {
       defines["SW0 Pin"] == "100" &&
       defines["Clock Pin"] == "020"
     ) {
-      setSelectedPRE(
-        "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_SPI_ProMicro.uf2"
-      );
-      downloadPre();
+      await downloadPre("https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_SPI_ProMicro.uf2");
     } else if (
       selectedMCU == "ProMicro-I2C" &&
       defines["Hex Color"] == "#0eeadf" &&
@@ -217,10 +205,7 @@ const MicrocontrollerFlasher = () => {
       defines["SW0 Pin"] == "100" &&
       defines["Clock Pin"] == "020"
     ) {
-      setSelectedPRE(
-        "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_I2C_ProMicro.uf2"
-      );
-      downloadPre();
+      await downloadPre("https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_I2C_ProMicro.uf2");
     } else if (
       selectedMCU == "XIAO" &&
       defines["Hex Color"] == "#0eeadf" &&
@@ -230,10 +215,7 @@ const MicrocontrollerFlasher = () => {
       defines["SW0 Pin"] == "100" &&
       defines["Clock Pin"] == "020"
     ) {
-      setSelectedPRE(
-        "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_XIAO.uf2"
-      );
-      downloadPre();
+      await downloadPre("https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_XIAO.uf2");
     } else {
       setCurrentStep(STEPS.CONNECT_DEVICE);
     }
@@ -364,9 +346,19 @@ const MicrocontrollerFlasher = () => {
     return defineOptions;
   };
 
-  const downloadPre = () => {
-    // fix this shit, opens blank page instead of the actual link (maybe gh-pages issue?)
-    window.open(selectedPRE);
+  const downloadPre = async(url) => {
+    const uf2Response = await fetch(`${API_BASE_URL}/build-firmware`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: url,
+        });
+
+        const firmwareBlob = await uf2Response.blob();
+        setPendingFirmware({
+          blob: firmwareBlob,
+          name: "firmware.uf2",
+        });
+
     setCurrentStep(STEPS.DFU);
   };
 

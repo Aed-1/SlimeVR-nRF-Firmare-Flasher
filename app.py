@@ -1,9 +1,11 @@
 from flask import Flask, jsonify, request, send_file
+from flask_cors import CORS
 import logging
 import os
 import subprocess
 
 app = Flask(__name__)
+CORS(app)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -411,6 +413,21 @@ def download_firmware():
             uf2Path,
             as_attachment=True,
             download_name=f'zephyr.uf2',
+        )
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/fetch-prebuild', methods=['GET'])
+def download_firmware():
+    subprocess.run(f"e: && cd {root_path}/firmware/ && {request}")
+
+    uf2Path = os.path.join(root_path, f"/firmware/{request}") 
+    try:
+        return send_file(
+            uf2Path,
+            as_attachment=True,
+            download_name=request,
         )
 
     except Exception as e:
