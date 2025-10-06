@@ -369,6 +369,14 @@ const MicrocontrollerFlasher = () => {
     await flasher.enterDfuMode();
   };
 
+  const FlashMultiple = async () => {
+    port = await navigator.serial.requestPort();
+
+    const flasher = new Nrf52DfuFlasher(port);
+    await flasher.enterDfuMode();
+    await handleSaveToDevice();
+  };
+
   const changeSelectedMCU = (value) => {
     const mcusWithoutIMU = ["Chrysalis", "Butterfly", "XIAO-Sense"];
     const needsIMU = !mcusWithoutIMU.includes(value);
@@ -850,7 +858,7 @@ const MicrocontrollerFlasher = () => {
                   </h2>
                   <div className="bg-green-900/30 border border-green-700/50 rounded-lg p-4 max-w-md mx-auto mb-6">
                     <p className="text-green-300 text-sm">
-                      The Tracker should appear as a new drive called NICENANO,
+                      The Tracker should appear as a new drive called NICENANO or SLMENRFTRK,
                       select this in the popup to flash your firmware
                     </p>
                   </div>
@@ -899,6 +907,13 @@ const MicrocontrollerFlasher = () => {
                 >
                   <RotateCcw className="w-5 h-5" />
                   <span>Flash Another Device</span>
+                </button>
+                <button
+                  onClick={FlashMultiple}
+                  className="py-4 px-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-lg transition-all duration-300 flex items-center gap-3 mx-auto shadow-lg hover:shadow-blue-500/25 transform hover:scale-105"
+                >
+                  <RotateCcw className="w-5 h-5" />
+                  <span>Flash Another Device With Same Firmware</span>
                 </button>
               </div>
             )}

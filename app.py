@@ -420,14 +420,14 @@ def download_firmware():
 
 @app.route('/api/fetch-prebuild', methods=['POST'])
 def download_firmware():
-    subprocess.run(f"e: && cd {root_path}/firmware/ && curl -o zephyr.uf2 {request}")
+    subprocess.run(f"e: && cd {root_path}/firmware/ && curl -o firmware.uf2 {request}")
 
-    uf2Path = os.path.join(root_path, f"/firmware/zephyr.uf2") 
+    uf2Path = os.path.join(root_path, f"/firmware/firmware.uf2") 
     try:
         return send_file(
             uf2Path,
             as_attachment=True,
-            download_name="zephyr.uf2",
+            download_name="firmware.uf2",
         )
 
     except Exception as e:
