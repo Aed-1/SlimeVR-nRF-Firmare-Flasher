@@ -1,12 +1,5 @@
-# React + Vite
+The web based firmare flasher for SlimeVR nRF based smol slimes.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is curently still a work in progress and is not ready for production yet. i hope by the end of the month i can get this out.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+to run this locally, you will need to install the nrf toolchain, sdk and all dependencies. you will find these dependencies quick when you run the code and get a krillion errors, you will also need to edit the directories in app.py (the api) to match the toolchain, sdk and firmware locations on your system. This is built to run on windows and i have no clue how much editing you would need to do to get it working on linux.
