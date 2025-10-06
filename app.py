@@ -418,16 +418,16 @@ def download_firmware():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/fetch-prebuild', methods=['GET'])
+@app.route('/api/fetch-prebuild', methods=['POST'])
 def download_firmware():
-    subprocess.run(f"e: && cd {root_path}/firmware/ && {request}")
+    subprocess.run(f"e: && cd {root_path}/firmware/ && curl -o zephyr.uf2 {request}")
 
-    uf2Path = os.path.join(root_path, f"/firmware/{request}") 
+    uf2Path = os.path.join(root_path, f"/firmware/zephyr.uf2") 
     try:
         return send_file(
             uf2Path,
             as_attachment=True,
-            download_name=request,
+            download_name="zephyr.uf2",
         )
 
     except Exception as e:

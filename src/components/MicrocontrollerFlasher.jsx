@@ -347,7 +347,7 @@ const MicrocontrollerFlasher = () => {
   };
 
   const downloadPre = async(url) => {
-    const uf2Response = await fetch(`${API_BASE_URL}/build-firmware`, {
+    const uf2Response = await fetch(`${API_BASE_URL}/fetch-prebuild`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: url,
