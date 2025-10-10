@@ -14,15 +14,19 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 root_path = os.path.dirname(__file__)
-
-def build(mcu, imu, hex, clk, sw0, vccGpio, lp, sleep):
-    global iteration
+def iterate():
     lines4 = open("Iterations/Iterations.txt", "r").readlines()
     iteration = int(lines4[0]) + 1
     write4 = open("Iterations/Iterations.txt", "w")
     write4.write(str(iteration))
     write4.close()
- 
+    return iteration
+
+def build(mcu, imu, hex, clk, sw0, vccGpio, lp, sleep):
+
+    iteration = iterate()
+
+
     root_path = os.path.dirname(__file__)
 
     subprocess.run(f"e: && cd {root_path}/firmware/~/ && git clone --single-branch --recurse-submodules -b master https://github.com/SlimeVR/SlimeVR-Tracker-nRF.git SlimeVR-Tracker-nRF-{iteration}", shell=True)
@@ -412,18 +416,25 @@ def download_firmware():
         return send_file(
             uf2Path,
             as_attachment=True,
-            download_name=f'zephyr.uf2',
+            download_name='zephyr.uf2',
         )
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/fetch-prebuild', methods=['POST'])
-def download_firmware():
-    subprocess.run(f"e: && cd {root_path}/firmware/ && curl -o firmware.uf2 {request}")
-
-    uf2Path = os.path.join(root_path, f"/firmware/firmware.uf2") 
+def fetch_prebuild():
     try:
+        iteration = iterate()
+
+        firmware_url = request.get_data(as_text=True)
+        logger.info(firmware_url)
+
+        subprocess.run(f"e: && cd {root_path}/uploads/ && wget -O firmware{iteration}.uf2 {firmware_url}", shell=True) #wget works but only half works, look at uploads folder last 2, weird i know
+    
+
+        uf2Path = os.path.join(root_path, f"uploads/firmware{iteration}.uf2") 
+
         return send_file(
             uf2Path,
             as_attachment=True,
