@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AlertCircle, Upload, ArrowRight, RotateCcw } from "lucide-react";
 
-const API_BASE_URL = "localhost:5000/api";
+const API_BASE_URL = "http://localhost:5000/api";
 
 class Nrf52DfuFlasher {
   constructor(serialPort) {
@@ -164,20 +164,30 @@ const MicrocontrollerFlasher = () => {
   };
 
   const handleConfigureNext = async () => {
+    setError(null);
+    setCurrentStep(STEPS.DFU);
+    EnterDfu();
+  };
+
+  const handleDfuNext = async () => {
     if (
       selectedMCU == "Chrysalis" &&
       defines["Hex Color"] == "#0eeadf" &&
       defines["LP Timeout"] == "300" &&
       defines["Sleep"] == false
     ) {
-      await downloadPre("https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_Chrysalis_ProMicro.uf2");
+      await downloadPre(
+        "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_Chrysalis_ProMicro.uf2"
+      );
     } else if (
       selectedMCU == "Butterfly" &&
       defines["Hex Color"] == "#0eeadf" &&
       defines["LP Timeout"] == "300" &&
       defines["Sleep"] == false
     ) {
-      await downloadPre("https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SlimevrMini4.uf2");
+      await downloadPre(
+        "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SlimevrMini4.uf2"
+      );
     } else if (
       selectedMCU == "XIAO-Sense" &&
       defines["Hex Color"] == "#0eeadf" &&
@@ -185,7 +195,9 @@ const MicrocontrollerFlasher = () => {
       defines["Sleep"] == false &&
       defines["Clock Pin"] == "020"
     ) {
-      await downloadPre("https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_XIAO_Sense.uf2");
+      await downloadPre(
+        "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_XIAO_Sense.uf2"
+      );
     } else if (
       selectedMCU == "ProMicro-SPI" &&
       defines["Hex Color"] == "#0eeadf" &&
@@ -195,7 +207,9 @@ const MicrocontrollerFlasher = () => {
       defines["SW0 Pin"] == "100" &&
       defines["Clock Pin"] == "020"
     ) {
-      await downloadPre("https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_SPI_ProMicro.uf2");
+      await downloadPre(
+        "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_SPI_ProMicro.uf2"
+      );
     } else if (
       selectedMCU == "ProMicro-I2C" &&
       defines["Hex Color"] == "#0eeadf" &&
@@ -205,7 +219,9 @@ const MicrocontrollerFlasher = () => {
       defines["SW0 Pin"] == "100" &&
       defines["Clock Pin"] == "020"
     ) {
-      await downloadPre("https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_I2C_ProMicro.uf2");
+      await downloadPre(
+        "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_I2C_ProMicro.uf2"
+      );
     } else if (
       selectedMCU == "XIAO" &&
       defines["Hex Color"] == "#0eeadf" &&
@@ -215,10 +231,13 @@ const MicrocontrollerFlasher = () => {
       defines["SW0 Pin"] == "100" &&
       defines["Clock Pin"] == "020"
     ) {
-      await downloadPre("https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_XIAO.uf2");
+      await downloadPre(
+        "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_XIAO.uf2"
+      );
     } else {
       setCurrentStep(STEPS.CONNECT_DEVICE);
     }
+    setCurrentStep(STEPS.SAVE_FILE);
   };
 
   const handleDefineChange = (defineName, value) => {
@@ -268,10 +287,6 @@ const MicrocontrollerFlasher = () => {
           body: JSON.stringify({ zipPath: buildData.zipPath }),
         });
 
-        if (!uf2Response.ok) {
-          throw new Error("Failed to download firmware file");
-        }
-
         const firmwareBlob = await uf2Response.blob();
         setPendingFirmware({
           blob: firmwareBlob,
@@ -301,27 +316,26 @@ const MicrocontrollerFlasher = () => {
 
       const dirPicker = await window.showDirectoryPicker();
 
-      let fileToSave;
-      if (pendingFirmware.blob instanceof File) {
-        fileToSave = pendingFirmware.blob;
-      } else {
-        fileToSave = new File([pendingFirmware.blob], pendingFirmware.name, {
-          type: "application/octet-stream",
-        });
-      }
-
       setStatusMessage("Saving firmware file...");
-      const fileHandle = await dirPicker.getFileHandle(fileToSave.name, {
+      const fileHandle = await dirPicker.getFileHandle(pendingFirmware.name, {
         create: true,
       });
+
       const writable = await fileHandle.createWritable();
-      await writable.write(fileToSave);
+      await writable.write(pendingFirmware.blob);
       await writable.close();
 
       setStatusMessage("Firmware saved successfully!");
       setCurrentStep(STEPS.COMPLETE);
     } catch (error) {
-      setError(`Failed to save file: ${error.message}`);
+      if (
+        error.message ==
+        "Failed to execute 'showDirectoryPicker' on 'Window': The user aborted a request."
+      ) {
+        setError("User Closed Popup, please reopen it and select drive.");
+      } else {
+        setError(`Failed to save file: ${error.message}`);
+      }
     }
   };
 
@@ -346,20 +360,18 @@ const MicrocontrollerFlasher = () => {
     return defineOptions;
   };
 
-  const downloadPre = async(url) => {
+  const downloadPre = async (url) => {
     const uf2Response = await fetch(`${API_BASE_URL}/fetch-prebuild`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: url,
-        });
-
-        const firmwareBlob = await uf2Response.blob();
-        setPendingFirmware({
-          blob: firmwareBlob,
-          name: "firmware.uf2",
-        });
-
-    setCurrentStep(STEPS.DFU);
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: url,
+    });
+    const firmwareBlob = await uf2Response.blob();
+    console.log(firmwareBlob.name);
+    setPendingFirmware({
+      blob: firmwareBlob,
+      name: "firmware.uf2",
+    });
   };
 
   const EnterDfu = async () => {
@@ -369,12 +381,10 @@ const MicrocontrollerFlasher = () => {
     await flasher.enterDfuMode();
   };
 
-  const FlashMultiple = async () => {
-    port = await navigator.serial.requestPort();
-
-    const flasher = new Nrf52DfuFlasher(port);
-    await flasher.enterDfuMode();
-    await handleSaveToDevice();
+  const FlashMultiple = () => {
+    setError(null);
+    setCurrentStep(STEPS.DFU);
+    EnterDfu();
   };
 
   const changeSelectedMCU = (value) => {
@@ -509,7 +519,7 @@ const MicrocontrollerFlasher = () => {
               </div>
             </div>
           )}
-          {(isProcessing || currentStep === STEPS.SAVE_FILE) && (
+          {isProcessing && (
             <div className="mb-8 p-6 bg-blue-900/30 border border-blue-700/50 rounded-xl backdrop-blur-sm">
               <div className="flex items-center gap-3 mb-4">
                 <p className="text-blue-300 font-medium">{statusMessage}</p>
@@ -695,7 +705,7 @@ const MicrocontrollerFlasher = () => {
 
                   <div className="pt-6">
                     <button
-                      onClick={downloadPre}
+                      onClick={downloadPre(selectedPRE)}
                       disabled={!selectedPRE}
                       className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 ${
                         !selectedPRE
@@ -828,22 +838,17 @@ const MicrocontrollerFlasher = () => {
                     Connect Your Tracker
                   </h2>
                   <p className="text-gray-400 mb-6">
-                    Enter DFU mode and drag the downloaded file into the
-                    NICENANO drive that pops up
+                    Select your tracker in the Popup then click the continue
+                    button
                   </p>
-                  <div className="bg-blue-900/30 border border-blue-700/50 rounded-lg p-4 max-w-md mx-auto">
-                    <p className="text-blue-300 text-sm">
-                      Connect your tracker via USB and click the button below
-                    </p>
-                  </div>
                 </div>
                 <div className="pt-6">
                   <button
-                    onClick={EnterDfu}
+                    onClick={handleDfuNext}
                     className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-blue-500/25 transform hover:scale-105
                       `}
                   >
-                    <span>Enter DFU</span>
+                    <span>Continue</span>
                     <ArrowRight className="w-5 h-5" />
                   </button>
                 </div>
@@ -858,8 +863,9 @@ const MicrocontrollerFlasher = () => {
                   </h2>
                   <div className="bg-green-900/30 border border-green-700/50 rounded-lg p-4 max-w-md mx-auto mb-6">
                     <p className="text-green-300 text-sm">
-                      The Tracker should appear as a new drive called NICENANO or SLMENRFTRK,
-                      select this in the popup to flash your firmware
+                      The Tracker should appear as a new drive called NICENANO
+                      or SLIMENRFTRK, select this in the popup to flash your
+                      firmware
                     </p>
                   </div>
                 </div>
@@ -871,13 +877,6 @@ const MicrocontrollerFlasher = () => {
                   >
                     <Upload className="w-5 h-5" />
                     <span>Select Drive</span>
-                  </button>
-
-                  <button
-                    onClick={resetWorkflow}
-                    className="py-4 px-6 bg-gray-600 hover:bg-gray-500 text-gray-300 hover:text-white font-semibold rounded-xl text-lg transition-all duration-300"
-                  >
-                    Cancel
                   </button>
                 </div>
               </div>
@@ -900,20 +899,20 @@ const MicrocontrollerFlasher = () => {
                     </p>
                   </div>
                 </div>
-
-                <button
-                  onClick={resetWorkflow}
-                  className="py-4 px-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-lg transition-all duration-300 flex items-center gap-3 mx-auto shadow-lg hover:shadow-blue-500/25 transform hover:scale-105"
-                >
-                  <RotateCcw className="w-5 h-5" />
-                  <span>Flash Another Device</span>
-                </button>
                 <button
                   onClick={FlashMultiple}
                   className="py-4 px-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-lg transition-all duration-300 flex items-center gap-3 mx-auto shadow-lg hover:shadow-blue-500/25 transform hover:scale-105"
                 >
                   <RotateCcw className="w-5 h-5" />
                   <span>Flash Another Device With Same Firmware</span>
+                </button>
+                <br />
+                <button
+                  onClick={resetWorkflow}
+                  className="py-4 px-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-lg transition-all duration-300 flex items-center gap-3 mx-auto shadow-lg hover:shadow-blue-500/25 transform hover:scale-105"
+                >
+                  <RotateCcw className="w-5 h-5" />
+                  <span>Restart Process</span>
                 </button>
               </div>
             )}
