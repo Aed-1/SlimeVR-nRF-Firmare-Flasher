@@ -77,10 +77,6 @@ const MicrocontrollerFlasher = () => {
           ]
         );
 
-        if (!mcusResponse.ok || !imusResponse.ok || !definesResponse.ok) {
-          throw new Error("Failed to fetch configuration data");
-        }
-
         const [mcusData, imusData, definesData] = await Promise.all([
           mcusResponse.json(),
           imusResponse.json(),
@@ -109,9 +105,6 @@ const MicrocontrollerFlasher = () => {
         setDefines(initialDefines);
       } catch (error) {
         console.error("Error fetching data:", error);
-        setError(
-          "Failed to load configuration data. Please ensure the backend is running."
-        );
       } finally {
         setIsLoading(false);
       }
@@ -264,8 +257,6 @@ const MicrocontrollerFlasher = () => {
   };
 
   const handleConnectAndProcess = async () => {
-    let port = null;
-
     try {
       setIsProcessing(true);
       setError(null);
@@ -287,14 +278,20 @@ const MicrocontrollerFlasher = () => {
           Sleep: defines["Sleep"] || false,
         };
 
+        while (progress > 100) {
+          await flasher.sleepMillis(300);
+          setProgress(progress + 2);
+        }
+
         const buildResponse = await fetch(`${API_BASE_URL}/build-firmware`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(config),
         });
 
+        setProgress(100);
+
         const buildData = await buildResponse.json();
-        setProgress(70);
 
         const uf2Response = await fetch(`${API_BASE_URL}/download-firmware`, {
           method: "POST",
@@ -313,8 +310,6 @@ const MicrocontrollerFlasher = () => {
           name: firmwareFile.name,
         });
       }
-
-      setProgress(100);
       setStatusMessage("Ready to save firmware to device");
       setCurrentStep(STEPS.SAVE_FILE);
       await flasher.enterDfuMode();
