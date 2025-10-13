@@ -163,13 +163,12 @@ const MicrocontrollerFlasher = () => {
     setCurrentStep(STEPS.CONFIGURE);
   };
 
-  const handleConfigureNext = async () => {
+  const handleDfuNext = () => {
     setError(null);
-    setCurrentStep(STEPS.DFU);
-    EnterDfu();
+    setCurrentStep(STEPS.SAVE_FILE);
   };
 
-  const handleDfuNext = async () => {
+  const handleConfigureNext = async () => {
     if (
       selectedMCU == "Chrysalis" &&
       defines["Hex Color"] == "#0eeadf" &&
@@ -179,6 +178,9 @@ const MicrocontrollerFlasher = () => {
       await downloadPre(
         "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_Chrysalis_ProMicro.uf2"
       );
+      setError(null);
+      setCurrentStep(STEPS.DFU);
+      EnterDfu();
     } else if (
       selectedMCU == "Butterfly" &&
       defines["Hex Color"] == "#0eeadf" &&
@@ -188,6 +190,9 @@ const MicrocontrollerFlasher = () => {
       await downloadPre(
         "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SlimevrMini4.uf2"
       );
+      setError(null);
+      setCurrentStep(STEPS.DFU);
+      EnterDfu();
     } else if (
       selectedMCU == "XIAO-Sense" &&
       defines["Hex Color"] == "#0eeadf" &&
@@ -198,6 +203,9 @@ const MicrocontrollerFlasher = () => {
       await downloadPre(
         "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_XIAO_Sense.uf2"
       );
+      setError(null);
+      setCurrentStep(STEPS.DFU);
+      EnterDfu();
     } else if (
       selectedMCU == "ProMicro-SPI" &&
       defines["Hex Color"] == "#0eeadf" &&
@@ -210,6 +218,9 @@ const MicrocontrollerFlasher = () => {
       await downloadPre(
         "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_SPI_ProMicro.uf2"
       );
+      setError(null);
+      setCurrentStep(STEPS.DFU);
+      EnterDfu();
     } else if (
       selectedMCU == "ProMicro-I2C" &&
       defines["Hex Color"] == "#0eeadf" &&
@@ -222,6 +233,9 @@ const MicrocontrollerFlasher = () => {
       await downloadPre(
         "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_I2C_ProMicro.uf2"
       );
+      setError(null);
+      setCurrentStep(STEPS.DFU);
+      EnterDfu();
     } else if (
       selectedMCU == "XIAO" &&
       defines["Hex Color"] == "#0eeadf" &&
@@ -234,10 +248,12 @@ const MicrocontrollerFlasher = () => {
       await downloadPre(
         "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_XIAO.uf2"
       );
+      setError(null);
+      setCurrentStep(STEPS.DFU);
+      EnterDfu();
     } else {
       setCurrentStep(STEPS.CONNECT_DEVICE);
     }
-    setCurrentStep(STEPS.SAVE_FILE);
   };
 
   const handleDefineChange = (defineName, value) => {
@@ -258,7 +274,6 @@ const MicrocontrollerFlasher = () => {
       port = await navigator.serial.requestPort();
 
       const flasher = new Nrf52DfuFlasher(port);
-      await flasher.enterDfuMode();
 
       if (flashMode === "build") {
         const config = {
@@ -302,6 +317,7 @@ const MicrocontrollerFlasher = () => {
       setProgress(100);
       setStatusMessage("Ready to save firmware to device");
       setCurrentStep(STEPS.SAVE_FILE);
+      await flasher.enterDfuMode();
 
       await port.close();
       setIsProcessing(false);
