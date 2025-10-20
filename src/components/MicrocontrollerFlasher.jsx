@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AlertCircle, Upload, ArrowRight, RotateCcw } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = "http://145.241.239.58:5000/api";
 
 class Nrf52DfuFlasher {
   constructor(serialPort) {
@@ -258,6 +258,7 @@ const MicrocontrollerFlasher = () => {
 
   const handleConnectAndProcess = async () => {
     try {
+      let port;
       setIsProcessing(true);
       setError(null);
       setProgress(0);
@@ -386,6 +387,7 @@ const MicrocontrollerFlasher = () => {
   };
 
   const EnterDfu = async () => {
+    let port;
     port = await navigator.serial.requestPort();
 
     const flasher = new Nrf52DfuFlasher(port);
