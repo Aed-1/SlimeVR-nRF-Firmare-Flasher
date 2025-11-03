@@ -9,37 +9,39 @@ CORS(app)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-UPLOAD_FOLDER = 'uploads'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-
 root_path = os.path.dirname(__file__)
-def iterate():
+def iterate(reset):
     lines4 = open("Iterations/Iterations.txt", "r").readlines()
     iteration = int(lines4[0]) + 1
     write4 = open("Iterations/Iterations.txt", "w")
-    write4.write(str(iteration))
+    if reset == True:
+        write4.write(0)
+    else:
+        write4.write(str(iteration))
     write4.close()
     return iteration
 
-def build(mcu, imu, hex, clk, sw0, vccGpio, lp, sleep):
+global prebuiltURLs
+prebuiltURLs = []
 
-    iteration = iterate()
+def build(mcu, imu, hex, clk, sw0, vccGpio, lp, sleep):
+    global iteration
+    iteration = iterate(False)
 
 
     root_path = os.path.dirname(__file__)
 
-    subprocess.run(f"cd {root_path}/firmware/~/ && git clone --single-branch --recurse-submodules -b master https://github.com/SlimeVR/SlimeVR-Tracker-nRF.git SlimeVR-Tracker-nRF-{iteration}", shell=True)
+    subprocess.run(f"cd {root_path}/firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0 && git clone --single-branch --recurse-submodules -b main https://github.com/SlimeVR/SlimeVR-Tracker-nRF.git SlimeVR-Tracker-nRF-{iteration}", shell=True)
 
-    dtsPathProMicro = os.path.join(root_path, f"firmware/~/SlimeVR-Tracker-nRF-{iteration}/boards/nordic/promicro_uf2/promicro_uf2.dts")
-    dtsPathXiao = os.path.join(root_path, f"firmware/~/SlimeVR-Tracker-nRF-{iteration}/boards/xiao_ble.overlay")
-    dtsPathXiaoSense = os.path.join(root_path, f"firmware/~/SlimeVR-Tracker-nRF-{iteration}/boards/xiao_ble_nrf52840_sense.overlay")
-    dtsPathChrysalis = os.path.join(root_path, f"firmware/~/SlimeVR-Tracker-nRF-{iteration}/boards/nordic/promicro_uf2/promicro_uf2_chrysalis.dts")
-    confPathXiao = os.path.join(root_path, f"firmware/~/SlimeVR-Tracker-nRF-{iteration}/boards/xiao_ble.conf")
-    confPathXiaoSense = os.path.join(root_path, f"firmware/~/SlimeVR-Tracker-nRF-{iteration}/boards/xiao_ble_nrf52840_sense.conf")
-    confPathButterfly = os.path.join(root_path, f"firmware/~/SlimeVR-Tracker-nRF-{iteration}/boards/slimevr/slimevrmini_p4_uf2/slimevrmini_p4_uf2_defconfig")
-    confPathChrysalis = os.path.join(root_path, f"firmware/~/SlimeVR-Tracker-nRF-142/boards/nordic/promicro_uf2/promicro_uf2_chrysalis_defconfig")
-    kconfigPath = os.path.join(root_path, f"firmware/~/SlimeVR-Tracker-nRF-{iteration}/prj.conf")
+    dtsPathProMicro = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/boards/nordic/promicro_uf2/promicro_uf2.dts")
+    dtsPathXiao = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/boards/xiao_ble.overlay")
+    dtsPathXiaoSense = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/boards/xiao_ble_nrf52840_sense.overlay")
+    dtsPathChrysalis = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/boards/nordic/promicro_uf2/promicro_uf2_chrysalis.dts")
+    confPathXiao = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/boards/xiao_ble.conf")
+    confPathXiaoSense = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/boards/xiao_ble_nrf52840_sense.conf")
+    confPathButterfly = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/boards/slimevr/slimevrmini_p4_uf2/slimevrmini_p4_uf2_defconfig")
+    confPathChrysalis = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/boards/nordic/promicro_uf2/promicro_uf2_chrysalis_defconfig")
+    kconfigPath = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/prj.conf")
 
     sw0Enabled = True
     senseClk = True
@@ -281,10 +283,10 @@ def build(mcu, imu, hex, clk, sw0, vccGpio, lp, sleep):
     else:
         print("invalid board")
 
-    subprocess.run(f"cd {root_path}/firmware/~/ && {root_path}/firmware/~/.venv/Scripts/activate.bat && west build --board {boardBuild}  --pristine=always SlimeVR-Tracker-nRF-{iteration} --build-dir SlimeVR-Tracker-nRF-{iteration}/build  --  -DNCS_TOOLCHAIN_VERSION=NONE  -DBOARD_ROOT=../SlimeVR-Tracker-nRF-{iteration}", shell=True)
-    
+    subprocess.run(f"cd {root_path}/firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0 && west build --board {boardBuild}  --pristine=always SlimeVR-Tracker-nRF-{iteration} --build-dir SlimeVR-Tracker-nRF-{iteration}/build  --  -DNCS_TOOLCHAIN_VERSION=NONE  -DBOARD_ROOT=../SlimeVR-Tracker-nRF-{iteration}", shell=True)
+
     global firmwareFile
-    firmwareFile = os.path.join(root_path, f"firmware/~/SlimeVR-Tracker-nRF-{iteration}/build/SlimeVR-Tracker-nRF-{iteration}/zephyr")
+    firmwareFile = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/build/SlimeVR-Tracker-nRF-{iteration}/zephyr")
 
 microcontrollers = [
     {
@@ -331,7 +333,7 @@ imu_sensors = [
 define_options = [
     {
         "name": "Hex Color",
-        "description": "Type hex code for LED color (xiao and butterfly only)",
+        "description": "Type hex code for LED color (xiao, Chrysalis and butterfly only)",
         "type": "string",
         "defaultValue": "#0eeadf",
         "category": "Defines"
@@ -420,9 +422,6 @@ def build_firmware():
 
         global uf2Path
         uf2Path = os.path.join(firmwareFile, "zephyr.uf2") 
-
-        if not os.path.exists(uf2Path):
-            logger.error(f"UF2 file not found at: {uf2Path}")
             
         return jsonify(uf2Path)
         
@@ -441,6 +440,7 @@ def download_firmware():
             as_attachment=True,
             download_name='zephyr.uf2',
         )
+    
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -452,10 +452,13 @@ def fetch_prebuild():
 
         firmware_url = request.get_data(as_text=True)
         logger.info(firmware_url)
+        
+        global prebuiltURLs
+        prebuiltURLs = []
+        prebuiltURLs.append(firmware_url)
 
         subprocess.run(f"cd {root_path}/uploads/ && wget -O firmware{iteration}.uf2 {firmware_url}", shell=True)
     
-
         uf2Path = os.path.join(root_path, f"uploads/firmware{iteration}.uf2") 
 
         return send_file(
@@ -464,6 +467,23 @@ def fetch_prebuild():
             download_name="firmware.uf2",
         )
 
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/delete-cache', methods=['POST'])
+def delete_cache():
+    try:
+        for i in range (prebuiltURLs.len):
+            subprocess.run(f"cd {root_path}/uploads/ && rm -r {prebuiltURLs[i]}", shell=True)
+            logger.info("deleted prebuild cache")
+
+        for i in range(0, iteration):
+            subprocess.run(f"cd {root_path}/firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0 && rm -r SlimeVR-Tracker-nRF-{i}", shell=True)
+            logger.info("deleted build cache")
+
+        iterate(True)
+
+        return jsonify("deleted cache")
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     

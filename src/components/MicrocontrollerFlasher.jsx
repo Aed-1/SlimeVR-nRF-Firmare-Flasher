@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AlertCircle, Upload, ArrowRight, RotateCcw } from "lucide-react";
 
-const API_BASE_URL = "http://145.241.239.58:5000/api";
+const API_BASE_URL = "http://localhost:5000/api";
 
 class Nrf52DfuFlasher {
   constructor(serialPort) {
@@ -114,6 +114,7 @@ const MicrocontrollerFlasher = () => {
   }, []);
 
   const resetWorkflow = () => {
+    fetch(`${API_BASE_URL}/delete-cache`, { method: "POST" });
     setCurrentStep(STEPS.CHOOSE_MODE);
     setFlashMode(null);
     setSelectedMCU("");
@@ -263,7 +264,7 @@ const MicrocontrollerFlasher = () => {
       setError(null);
       setProgress(0);
 
-      port = await navigator.serial.requestPort();
+      //port = await navigator.serial.requestPort();
 
       const flasher = new Nrf52DfuFlasher(port);
 
@@ -289,7 +290,6 @@ const MicrocontrollerFlasher = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(config),
         });
-
         setProgress(100);
 
         const buildData = await buildResponse.json();
@@ -319,6 +319,7 @@ const MicrocontrollerFlasher = () => {
       setIsProcessing(false);
     } catch (error) {
       setError(`Process failed: ${error.message}`);
+      setIsProcessing(false);
     }
   };
 
@@ -370,6 +371,14 @@ const MicrocontrollerFlasher = () => {
     }
 
     return defineOptions;
+  };
+
+  const downloadPreList = async (pre) => {
+    await downloadPre(pre);
+
+    setCurrentStep(STEPS.DFU);
+
+    await EnterDfu();
   };
 
   const downloadPre = async (url) => {
@@ -491,15 +500,12 @@ const MicrocontrollerFlasher = () => {
 
   if (isLoading) {
     return (
-      <div className="w-full min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="fixed inset-0 bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="relative">
             <div className="w-16 h-16 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin mx-auto"></div>
-            <div className="w-12 h-12 border-4 border-transparent border-t-purple-500 rounded-full animate-spin absolute top-2 left-2 mx-auto"></div>
           </div>
-          <p className="text-gray-400 mt-6 text-lg">
-            Loading hardware configs...
-          </p>
+          <p className="text-gray-400 mt-6 text-lg">Loading configs...</p>
         </div>
       </div>
     );
@@ -718,7 +724,7 @@ const MicrocontrollerFlasher = () => {
 
                   <div className="pt-6">
                     <button
-                      onClick={downloadPre(selectedPRE)}
+                      onClick={(e) => downloadPreList(selectedPRE)}
                       disabled={!selectedPRE}
                       className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 ${
                         !selectedPRE
@@ -945,5 +951,3 @@ const MicrocontrollerFlasher = () => {
 };
 
 export default MicrocontrollerFlasher;
-
-// made by AED
