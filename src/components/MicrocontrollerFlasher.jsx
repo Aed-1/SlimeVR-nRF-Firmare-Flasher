@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AlertCircle, Upload, ArrowRight, RotateCcw } from "lucide-react";
-
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = "https://smol.aed-dev.com/backend/api";
+//const API_BASE_URL = "http://127.0.0.1:8000/api";
 
 class Nrf52DfuFlasher {
   constructor(serialPort) {
@@ -62,8 +62,10 @@ const MicrocontrollerFlasher = () => {
   const [pendingFirmware, setPendingFirmware] = useState(null);
   const [statusMessage, setStatusMessage] = useState("");
   const [firmwareList, setFirmwareList] = useState("");
+  const [recieverFirmwareList, setRecieverFirmwareList] = useState("");
   const [showIMU, setShowIMU] = useState(true);
   const [continueDefines, setContinueDefines] = useState(false);
+  const [isChromium, setIsChromium] = useState(false);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -87,15 +89,402 @@ const MicrocontrollerFlasher = () => {
         setImuSensors(imusData);
         setDefineOptions(definesData);
 
-        const response = await fetch(
-          "https://api.github.com/repos/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/latest"
+        if (!!window.chrome) {
+          setIsChromium(true);
+        } else {
+          setIsChromium(false);
+        }
+
+        const recieverFirmwareNames = [
+          {
+            name: "Etee",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_etee_Receiver.uf2",
+          },
+          {
+            name: "Holyiot",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Holyiot_Dongle_Receiver.hex",
+          },
+          {
+            name: "Ebyte",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Nordic_eByte_Dongle_Receiver.hex",
+          },
+          {
+            name: "ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_ProMicro_Receiver.uf2v",
+          },
+          {
+            name: "XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_XIAO_Receiver.uf2",
+          },
+        ];
+
+        const trackerFirmwareNames = [
+          {
+            name: "Chrysalis-Mag",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_Chrysalis_Mag_ProMicro.uf2",
+          },
+          {
+            name: "Chrysalis",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_Chrysalis_ProMicro.uf2",
+          },
+          {
+            name: "CLK-I2C-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_CLK_I2C_Mag_ProMicro.uf2",
+          },
+          {
+            name: "CLK-I2C-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_CLK_I2C_ProMicro.uf2",
+          },
+          {
+            name: "CLK-Mag-XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_CLK_Mag_XIAO.uf2",
+          },
+          {
+            name: "CLK-SPI-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_CLK_SPI_Mag_ProMicro.uf2",
+          },
+          {
+            name: "CLK-SPI-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_CLK_SPI_ProMicro.uf2",
+          },
+          {
+            name: "CLK-XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_CLK_XIAO.uf2",
+          },
+          {
+            name: "I2C-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_I2C_Mag_ProMicro.uf2",
+          },
+          {
+            name: "I2C-Mag-Stacked",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_I2C_Mag_StackedSmol.uf2",
+          },
+          {
+            name: "I2C-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_I2C_ProMicro.uf2",
+          },
+          {
+            name: "I2C-Stacked",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_I2C_StackedSmol.uf2",
+          },
+          {
+            name: "Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_Mag_ProMicro.uf2",
+          },
+          {
+            name: "Mag-XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_Mag_XIAO.uf2",
+          },
+          {
+            name: "Mochi",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_Mochi.uf2",
+          },
+          {
+            name: "NoCLK-I2C-Mag-Stacked",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoCLK_I2C_Mag_StackedSmol.uf2",
+          },
+          {
+            name: "NoCLK-I2C-Stacked",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoCLK_I2C_StackedSmol.uf2",
+          },
+          {
+            name: "NoCLK-NoSleep-I2C-Mag-Stacked",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoCLK_NoSleep_I2C_Mag_StackedSmol.uf2",
+          },
+          {
+            name: "NoCLK-NoSleep-I2C-Stacked",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoCLK_NoSleep_I2C_StackedSmol.uf2",
+          },
+          {
+            name: "NoCLK-NoSleep-SPI-Mag-Stacked",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoCLK_NoSleep_SPI_Mag_StackedSmol.uf2",
+          },
+          {
+            name: "NoCLK-NoSleep-SPI-Stacked",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoCLK_NoSleep_SPI_StackedSmol.uf2",
+          },
+          {
+            name: "NoCLK-SPI-Mag-Stacked",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoCLK_SPI_Mag_StackedSmol.uf2",
+          },
+          {
+            name: "NoCLK-SPI-Stacked",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoCLK_SPI_StackedSmol.uf2",
+          },
+          {
+            name: "NoSleep-CLK-I2C-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleepCLK_I2C_Mag_ProMicro.uf2",
+          },
+          {
+            name: "NoSleep-CLK-I2C-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleepCLK_I2C_ProMicro.uf2",
+          },
+          {
+            name: "NoSleep-CLK-Mag-XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleepCLK_Mag_XIAO.uf2",
+          },
+          {
+            name: "NoSleep-CLK-SPI-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleepCLK_SPI_Mag_ProMicro.uf2",
+          },
+          {
+            name: "NoSleep-CLK-SPI-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleepCLK_SPI_ProMicro.uf2",
+          },
+          {
+            name: "NoSleep-CLK-XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleepCLK_XIAO.uf2",
+          },
+          {
+            name: "Nosleep-Chrysalis-Mag",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_Chrysalis_Mag_ProMicro.uf2",
+          },
+          {
+            name: "NoSleep-Chrysalis",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_Chrysalis_ProMicro.uf2",
+          },
+          {
+            name: "NoSleep-I2C-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_I2C_Mag_ProMicro.uf2",
+          },
+          {
+            name: "NoSleep-I2C-Mag-Stacked",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_I2C_Mag_StackedSmol.uf2",
+          },
+          {
+            name: "NoSleep-I2C-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_I2C_ProMicro.uf2",
+          },
+          {
+            name: "NoSleep-I2C-Stacked",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_I2C_StackedSmol.uf2",
+          },
+          {
+            name: "NoSleep-Mag-XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_Mag_XIAO.uf2",
+          },
+          {
+            name: "NoSleep-Mochi",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_Mochi.uf2",
+          },
+          {
+            name: "NoSleep-R3",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_R3.uf2",
+          },
+          {
+            name: "NoSleep-Butterfly-R9",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_SlimevrMini4R9.uf2",
+          },
+          {
+            name: "NoSleep-smSPI-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_smSPI_Mag_ProMicro.uf2",
+          },
+          {
+            name: "NoSleep-smSPI-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_smSPI_ProMicro.uf2",
+          },
+          {
+            name: "NoSleep-SPI-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_SPI_Mag_ProMicro.uf2",
+          },
+          {
+            name: "NoSleep-SPI-Mag-Stacked",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_SPI_Mag_StackedSmol.uf2",
+          },
+          {
+            name: "NoSleep-SPI-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_SPI_ProMicro.uf2",
+          },
+          {
+            name: "NoSleep-SPI-Stacked",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_SPI_StackedSmol.uf2",
+          },
+          {
+            name: "NoSleep-XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_XIAO.uf2",
+          },
+          {
+            name: "NoSleep-XIAO-Sense",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_NoSleep_XIAO_Sense.uf2",
+          },
+          {
+            name: "ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_ProMicro.uf2",
+          },
+          {
+            name: "R3",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_R3.uf2",
+          },
+          {
+            name: "Butterfly-R9",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SlimevrMini4R9.uf2",
+          },
+          {
+            name: "smSPI-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_smSPI_Mag_ProMicro.uf2",
+          },
+          {
+            name: "smSPI-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_smSPI_ProMicro.uf2",
+          },
+          {
+            name: "SPI-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SPI_Mag_ProMicro.uf2",
+          },
+          {
+            name: "SPI-Mag-Stacked",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SPI_Mag_StackedSmol.uf2",
+          },
+          {
+            name: "SPI-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SPI_ProMicro.uf2",
+          },
+          {
+            name: "SPI-Stacked",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SPI_StackedSmol.uf2",
+          },
+          {
+            name: "SW0-CLK-I2C-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_CLK_I2C_Mag_ProMicro.uf2",
+          },
+          {
+            name: "SW0-SLK-SPI-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_CLK_I2C_ProMicro.uf2",
+          },
+          {
+            name: "SW0-CLK-Mag-XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_CLK_Mag_XIAO.uf2",
+          },
+          {
+            name: "SW0-I2C-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_CLK_SPI_Mag_ProMicro.uf2",
+          },
+          {
+            name: "SW0-I2C-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_CLK_SPI_ProMicro.uf2",
+          },
+          {
+            name: "SW0-CLK-XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_CLK_XIAO.uf2",
+          },
+          {
+            name: "SW0-I2C-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_I2C_Mag_ProMicro.uf2",
+          },
+          {
+            name: "SW0-I2C-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_I2C_ProMicro.uf2",
+          },
+          {
+            name: "SW0-Mag-XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_Mag_XIAO.uf2",
+          },
+          {
+            name: "SW0-NoSleep-CLK-I2C-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_NoSleepCLK_I2C_Mag_ProMicro.uf2",
+          },
+          {
+            name: "SW0-NoSleep-CLK-I2C-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_NoSleepCLK_I2C_ProMicro.uf2",
+          },
+          {
+            name: "SW0-NoSleep-CLK-Mag-XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_NoSleepCLK_Mag_XIAO.uf2",
+          },
+          {
+            name: "SW0-NoSleep-CLK-SPI-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_NoSleepCLK_SPI_Mag_ProMicro.uf2",
+          },
+          {
+            name: "SW0-NoSleep-CLK-SPI-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_NoSleepCLK_SPI_ProMicro.uf2",
+          },
+          {
+            name: "SW0-NoSleep-CLK-XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_NoSleepCLK_XIAO.uf2",
+          },
+          {
+            name: "SW0-NoSleep-I2C-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_NoSleep_I2C_Mag_ProMicro.uf2",
+          },
+          {
+            name: "SW0-NoSleep-I2C-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_NoSleep_I2C_ProMicro.uf2",
+          },
+          {
+            name: "SW0-NoSleep-Mag-XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_NoSleep_Mag_XIAO.uf2",
+          },
+          {
+            name: "SW0-NoSleep-smSPI-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_NoSleep_smSPI_Mag_ProMicro.uf2",
+          },
+          {
+            name: "SW0-NoSleep-smSPI-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_NoSleep_smSPI_ProMicro.uf2",
+          },
+          {
+            name: "SW0-NoSleep-SPI-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_NoSleep_SPI_Mag_ProMicro.uf2",
+          },
+          {
+            name: "SW0-NoSleep-SPI-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_NoSleep_SPI_ProMicro.uf2",
+          },
+          {
+            name: "SW0-NoSleep-XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_NoSleep_XIAO.uf2",
+          },
+          {
+            name: "SW0-NoSleep-XIAO-Sense",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_NoSleep_XIAO_Sense.uf2",
+          },
+          {
+            name: "SW0-smSPI-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_smSPI_Mag_ProMicro.uf2",
+          },
+          {
+            name: "SW0-smSPI-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_smSPI_ProMicro.uf2",
+          },
+          {
+            name: "SW0-SPI-Mag-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_SPI_Mag_ProMicro.uf2",
+          },
+          {
+            name: "SW0-SPI-ProMicro",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_SPI_ProMicro.uf2",
+          },
+          {
+            name: "SW0-XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_XIAO.uf2",
+          },
+          {
+            name: "SW0-XIAO-Sense",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SW0_XIAO_Sense.uf2",
+          },
+          {
+            name: "XIAO",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_XIAO.uf2",
+          },
+          {
+            name: "XIAO-Sense",
+            url: "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_XIAO_Sense.uf2",
+          },
+        ];
+
+        setFirmwareList(
+          trackerFirmwareNames.map((a) => ({
+            name: a.name,
+            url: a.url,
+          }))
         );
 
-        const data = await response.json();
-        setFirmwareList(
-          data.assets
-            .filter((a) => a.name)
-            .map((a) => ({ name: a.name, url: a.browser_download_url }))
+        setRecieverFirmwareList(
+          recieverFirmwareNames.map((a) => ({
+            name: a.name,
+            url: a.url,
+          }))
         );
 
         const initialDefines = {};
@@ -114,7 +503,6 @@ const MicrocontrollerFlasher = () => {
   }, []);
 
   const resetWorkflow = () => {
-    fetch(`${API_BASE_URL}/delete-cache`, { method: "POST" });
     setCurrentStep(STEPS.CHOOSE_MODE);
     setFlashMode(null);
     setSelectedMCU("");
@@ -206,7 +594,7 @@ const MicrocontrollerFlasher = () => {
       defines["LP Timeout"] == "300" &&
       defines["Sleep"] == false &&
       defines["VCC GPIO pin"] == "031" &&
-      defines["SW0 Pin"] == "100" &&
+      defines["SW0 Pin"] == "000" &&
       defines["Clock Pin"] == "020"
     ) {
       await downloadPre(
@@ -221,7 +609,7 @@ const MicrocontrollerFlasher = () => {
       defines["LP Timeout"] == "300" &&
       defines["Sleep"] == false &&
       defines["VCC GPIO pin"] == "031" &&
-      defines["SW0 Pin"] == "100" &&
+      defines["SW0 Pin"] == "000" &&
       defines["Clock Pin"] == "020"
     ) {
       await downloadPre(
@@ -264,7 +652,7 @@ const MicrocontrollerFlasher = () => {
       setError(null);
       setProgress(0);
 
-      //port = await navigator.serial.requestPort();
+      port = await navigator.serial.requestPort();
 
       const flasher = new Nrf52DfuFlasher(port);
 
@@ -346,6 +734,9 @@ const MicrocontrollerFlasher = () => {
         "Failed to execute 'showDirectoryPicker' on 'Window': The user aborted a request."
       ) {
         setError("User Closed Popup, please reopen it and select drive.");
+      } else if (error.message == "Failed to perform Safe Browsing check.") {
+        setStatusMessage("Firmware saved successfully!");
+        setCurrentStep(STEPS.COMPLETE);
       } else {
         setError(`Failed to save file: ${error.message}`);
       }
@@ -520,6 +911,18 @@ const MicrocontrollerFlasher = () => {
               SlimeVR nRF Firmware Flasher
             </h1>
 
+            {!isChromium && (
+              <div className="mb-8 p-4 bg-red-900/50 border border-red-700 rounded-xl backdrop-blur-sm">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-400" />
+                  <p className="text-red-300">
+                    Please switch to a chromium based broswer such as google
+                    chrome or opera gx.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {currentStep !== STEPS.CHOOSE_MODE && (
               <button
                 onClick={resetWorkflow}
@@ -562,10 +965,23 @@ const MicrocontrollerFlasher = () => {
                     How do you want to build your firmware?
                   </h2>
                 </div>
-
                 <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
                   <button
+                    onClick={() => handleModeSelect("pre")}
+                    disabled={!isChromium}
+                    className="p-8 bg-gray-700 border border-gray-600 rounded-2xl hover:bg-gray-600 transition-all duration-300"
+                  >
+                    <h3 className="text-xl font-semibold mb-2">
+                      Prebuilt Firmware
+                    </h3>
+                    <p className="text-gray-400 text-sm">
+                      Select a prebuilt firmware file from a list
+                    </p>
+                  </button>
+
+                  <button
                     onClick={() => handleModeSelect("build")}
+                    disabled={!isChromium}
                     className="p-8 bg-gray-700 border border-gray-600 rounded-2xl hover:bg-gray-600 transition-all duration-300"
                   >
                     <h3 className="text-xl font-semibold mb-2">
@@ -578,6 +994,7 @@ const MicrocontrollerFlasher = () => {
 
                   <button
                     onClick={() => handleModeSelect("uf2")}
+                    disabled={!isChromium}
                     className="p-8 bg-gray-700 border border-gray-600 rounded-2xl hover:bg-gray-600 transition-all duration-300"
                   >
                     <h3 className="text-xl font-semibold mb-2">
@@ -585,18 +1002,6 @@ const MicrocontrollerFlasher = () => {
                     </h3>
                     <p className="text-gray-400 text-sm">
                       Flash a uf2 file from your computer to the tracker
-                    </p>
-                  </button>
-
-                  <button
-                    onClick={() => handleModeSelect("pre")}
-                    className="p-8 bg-gray-700 border border-gray-600 rounded-2xl hover:bg-gray-600 transition-all duration-300"
-                  >
-                    <h3 className="text-xl font-semibold mb-2">
-                      Prebuilt Firmare
-                    </h3>
-                    <p className="text-gray-400 text-sm">
-                      Select a prebuilt firmware file from a list
                     </p>
                   </button>
                 </div>
@@ -636,20 +1041,20 @@ const MicrocontrollerFlasher = () => {
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold mb-4">Select Hardware</h2>
                   <p className="text-gray-400">
-                    Choose which MCU and IMU you are using
+                    Choose which Board Format and IMU you are using
                   </p>
                 </div>
                 <div className="max-w-2xl mx-auto space-y-6">
                   <div>
                     <label className="block text-lg font-medium text-gray-300 mb-3">
-                      Microcontroller
+                      Board Format
                     </label>
                     <select
                       value={selectedMCU}
                       onChange={(e) => changeSelectedMCU(e.target.value)}
                       className="w-full px-4 py-4 bg-gray-700 border border-gray-600 rounded-xl text-white text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     >
-                      <option value="">Choose your MCU</option>
+                      <option value="">Choose your Board Format</option>
                       {microcontrollers.map((mcu) => (
                         <option key={mcu.id} value={mcu.id}>
                           {mcu.name}
@@ -706,7 +1111,7 @@ const MicrocontrollerFlasher = () => {
                 <div className="max-w-2xl mx-auto space-y-6">
                   <div>
                     <label className="block text-lg font-medium text-gray-300 mb-3">
-                      Firmware
+                      Tracker Firmware
                     </label>
                     <select
                       value={selectedPRE}
@@ -715,6 +1120,22 @@ const MicrocontrollerFlasher = () => {
                     >
                       <option value="">Choose your Prebuilt firmware</option>
                       {firmwareList.map((firm) => (
+                        <option key={firm.url} value={firm.url}>
+                          {firm.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    <label className="block text-lg font-medium text-gray-300 mb-3">
+                      Reciever Firmware
+                    </label>
+                    <select
+                      value={selectedPRE}
+                      onChange={(e) => setSelectedPRE(e.target.value)}
+                      className="w-full px-4 py-4 bg-gray-700 border border-gray-600 rounded-xl text-white text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    >
+                      <option value="">Choose your Prebuilt firmware</option>
+                      {recieverFirmwareList.map((firm) => (
                         <option key={firm.url} value={firm.url}>
                           {firm.name}
                         </option>

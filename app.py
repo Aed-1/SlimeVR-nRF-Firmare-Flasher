@@ -39,7 +39,7 @@ def build(mcu, imu, hex, clk, sw0, vccGpio, lp, sleep):
     dtsPathChrysalis = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/boards/nordic/promicro_uf2/promicro_uf2_chrysalis.dts")
     confPathXiao = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/boards/xiao_ble.conf")
     confPathXiaoSense = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/boards/xiao_ble_nrf52840_sense.conf")
-    confPathButterfly = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/boards/slimevr/slimevrmini_p4_uf2/slimevrmini_p4_uf2_defconfig")
+    confPathButterfly = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/boards/slimevr/slimevrmini_p4r9_uf2/slimevrmini_p4r9_uf2_defconfig")
     confPathChrysalis = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/boards/nordic/promicro_uf2/promicro_uf2_chrysalis_defconfig")
     kconfigPath = os.path.join(root_path, f"firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0/SlimeVR-Tracker-nRF-{iteration}/prj.conf")
 
@@ -275,7 +275,7 @@ def build(mcu, imu, hex, clk, sw0, vccGpio, lp, sleep):
         boardBuild = "xiao_ble/nrf52840/sense"
         XiaoSenseDefines()
     elif board == "Butterfly":
-        boardBuild = "slimevrmini_p4_uf2/nrf52833"
+        boardBuild = "slimevrmini_p4r9_uf2/nrf52833"
         ButterflyDefines()
     elif board == "Chrysalis":
         boardBuild = "promicro_uf2/nrf52840/chrysalis"
@@ -349,7 +349,7 @@ define_options = [
         "name": "SW0 Pin",
         "description": "Select pin for User (SW0) button",
         "type": "string",
-        "defaultValue": "100",
+        "defaultValue": "000",
         "category": "Defines"
     },
     {
@@ -447,8 +447,9 @@ def download_firmware():
 
 @app.route('/api/fetch-prebuild', methods=['POST'])
 def fetch_prebuild():
+
     try:
-        iteration = iterate()
+        iteration = iterate(False)
 
         firmware_url = request.get_data(as_text=True)
         logger.info(firmware_url)
@@ -470,22 +471,22 @@ def fetch_prebuild():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
-@app.route('/api/delete-cache', methods=['POST'])
-def delete_cache():
-    try:
-        for i in range (prebuiltURLs.len):
-            subprocess.run(f"cd {root_path}/uploads/ && rm -r {prebuiltURLs[i]}", shell=True)
-            logger.info("deleted prebuild cache")
-
-        for i in range(0, iteration):
-            subprocess.run(f"cd {root_path}/firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0 && rm -r SlimeVR-Tracker-nRF-{i}", shell=True)
-            logger.info("deleted build cache")
-
-        iterate(True)
-
-        return jsonify("deleted cache")
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+#@app.route('/api/delete-cache', methods=['POST'])
+#def delete_cache():
+#   try:
+#        for i in range (prebuiltURLs.len):
+#            subprocess.run(f"cd {root_path}/uploads/ && rm -r {prebuiltURLs[i]}", shell=True)
+#            logger.info("deleted prebuild cache")
+#
+#        for i in range(0, iteration):
+#            subprocess.run(f"cd {root_path}/firmware/~/.toolchain-nrf52/nrf52-sdk-3.1.0 && rm -r SlimeVR-Tracker-nRF-{i}", shell=True)
+#            logger.info("deleted build cache")
+#
+#        iterate(True)
+#
+#        return jsonify("deleted cache")
+#    except Exception as e:
+#        return jsonify({'error': str(e)}), 500
     
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

@@ -1,6 +1,5 @@
-import './App.css';
-import MicrocontrollerFlasher from './components/MicrocontrollerFlasher';
-
+import "./App.css";
+import MicrocontrollerFlasher from "./components/MicrocontrollerFlasher";
 function App() {
   return (
     <div className="App">
