@@ -1,5 +1,7 @@
 The web based firmare flasher for SlimeVR nRF based smol slimes.
 
-This is curently still a work in progress and is not ready for production yet. i hope by the end of the month i can get this out.
+WIP
 
-to run this locally, you will need to install the nrf toolchain, sdk and all dependencies. you will find these dependencies quick when you run the code and get a krillion errors, you will also need to edit the directories in app.py (the api) to match the toolchain, sdk and firmware locations on your system. This is built to run on windows and i have no clue how much editing you would need to do to get it working on linux.
+you can run the backend easily by typing "npm run dev"
+
+for the backend, on request i can provide you with the docker container to run it easily, if you dont want to contact me / i deny your request, you can do it yourself by installing the nrf toolchain, zephyr sdk and slimevr firmware, then edit the directories as appropriate in app.py
