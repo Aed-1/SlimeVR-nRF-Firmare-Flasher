@@ -42,6 +42,7 @@ const STEPS = {
   SAVE_FILE: "save_file",
   COMPLETE: "complete",
   DFU: "enter_dfu",
+  DFUNew: "DFUNew",
 };
 
 const MicrocontrollerFlasher = () => {
@@ -573,7 +574,6 @@ const MicrocontrollerFlasher = () => {
         "https://github.com/Shine-Bright-Meow/SlimeNRF-Firmware-CI/releases/download/latest/SlimeNRF_Tracker_SlimevrMini4.uf2"
       );
       setError(null);
-      setCurrentStep(STEPS.DFU);
       EnterDfu();
     } else if (
       selectedMCU == "XIAO-Sense" &&
@@ -652,10 +652,6 @@ const MicrocontrollerFlasher = () => {
       setError(null);
       setProgress(0);
 
-      port = await navigator.serial.requestPort();
-
-      const flasher = new Nrf52DfuFlasher(port);
-
       if (flashMode === "build") {
         const config = {
           mcu: selectedMCU,
@@ -667,11 +663,6 @@ const MicrocontrollerFlasher = () => {
           "LP Timeout": defines["LP Timeout"] || "",
           Sleep: defines["Sleep"] || false,
         };
-
-        while (progress > 100) {
-          await flasher.sleepMillis(300);
-          setProgress(progress + 2);
-        }
 
         const buildResponse = await fetch(`${API_BASE_URL}/build-firmware`, {
           method: "POST",
@@ -700,8 +691,7 @@ const MicrocontrollerFlasher = () => {
         });
       }
       setStatusMessage("Ready to save firmware to device");
-      setCurrentStep(STEPS.SAVE_FILE);
-      await flasher.enterDfuMode();
+      EnterDfu();
 
       await port.close();
       setIsProcessing(false);
@@ -790,13 +780,36 @@ const MicrocontrollerFlasher = () => {
     let port;
     port = await navigator.serial.requestPort();
 
+    await this.serialPort.open({
+      baudRate: 115200,
+    });
+
+    const writer = this.serialPort.writable.getWriter();
+    const reader = port.readable.getReader();
+
+    await writer.write(new TextEncoder().encode("meow\r\n"));
+    writer.releaseLock();
+
+    const { value } = await Promise.race([
+      reader.read(),
+      new Promise((_, reject) => setTimeout(() => reject("timeout"), 500)),
+    ]).catch(() => ({ value: null }));
+
+    reader.releaseLock();
+
+    if (value) {
+      setCurrentStep(STEPS.DFU);
+      await flasher.enterDfuMode();
+    } else {
+      setCurrentStep(STEPS.DFUNew);
+    }
+
     const flasher = new Nrf52DfuFlasher(port);
     await flasher.enterDfuMode();
   };
 
   const FlashMultiple = () => {
     setError(null);
-    setCurrentStep(STEPS.DFU);
     EnterDfu();
   };
 
@@ -1295,6 +1308,30 @@ const MicrocontrollerFlasher = () => {
               </div>
             )}
 
+            {currentStep === STEPS.DFUNew && (
+              <div className="text-center">
+                <div className="mb-8">
+                  <h2 className="text-3xl font-bold mb-4">
+                    Connect Your Tracker
+                  </h2>
+                  <p className="text-gray-400 mb-6">
+                    Double click RST button or short pins RST and GND twice in
+                    quick sucession.
+                  </p>
+                </div>
+                <div className="pt-6">
+                  <button
+                    onClick={handleDfuNext}
+                    className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-blue-500/25 transform hover:scale-105
+                      `}
+                  >
+                    <span>Continue</span>
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
             {currentStep === STEPS.SAVE_FILE && (
               <div className="text-center">
                 <div className="mb-8">
@@ -1305,7 +1342,8 @@ const MicrocontrollerFlasher = () => {
                     <p className="text-green-300 text-sm">
                       The Tracker should appear as a new drive called NICENANO
                       or SLIMENRFTRK, select this in the popup to flash your
-                      firmware
+                      firmware, if any additional popups open, click allow on
+                      them all.
                     </p>
                   </div>
                 </div>
